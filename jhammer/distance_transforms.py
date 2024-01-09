@@ -19,9 +19,10 @@ def distance_transform_sdf(input, normalize=False):
     neg_distance = distance_transform_edt(neg_segmentation)
 
     boundary = find_boundaries(binary_segmentation_np, mode="inner")
+    eps = 1e-6
     if normalize:
-        sdf = (neg_distance - neg_distance.min()) / (neg_distance.max() - neg_distance.min()) - \
-              (pos_distance - pos_distance.min()) / (pos_distance.max() - pos_distance.min())
+        sdf = (neg_distance - neg_distance.min()) / (neg_distance.max() - neg_distance.min() + eps) - \
+              (pos_distance - pos_distance.min()) / (pos_distance.max() - pos_distance.min() + eps)
     else:
         sdf = neg_distance - pos_distance
     sdf[boundary] = 0

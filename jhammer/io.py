@@ -41,18 +41,43 @@ def read_nii(input_file):
     return data.get_fdata()
 
 
-def save_nii(output_file, data):
+def save_nii(output_file,
+             data,
+             voxel_spacing=None,
+             orientation="LPI"):
     """
-    Convert and save as nii.
-    Note that nii format needs a shape of WHD
-    :param output_file:
-    :param data: ndarray image
+    Save image with nii format.
+    Args:
+        output_file:
+        data:
+        voxel_spacing: `tuple(x, y, z)`. Voxel spacing of each axis.
+        orientation: Default is LPI (Left-Posterior-Inferior), can be ARI (Anterior-Right-Inferior).
+
+    Returns:
+
     """
-    # [-1, -1, 1, 1] for RAI, default is LPI
     import nibabel as nib
     ensure_dir(output_file)
-    nii_file = nib.Nifti1Image(data, np.diag((-1, -1, 1, 1)))
-    nib.save(nii_file, output_file)
+    if voxel_spacing is None:
+        voxel_spacing = (1.0, 1.0, 1.0)  # Replace this with your desired voxel spacing in millimeters
+
+    match orientation:
+        case "LPI":
+            affine_matrix = np.diag(list(voxel_spacing) + [1.0])
+        case "ARI":
+            # Calculate the affine matrix based on the desired voxel spacing and ARI orientation
+            affine_matrix = np.array([
+                [0, -voxel_spacing[0], 0, 0],
+                [-voxel_spacing[1], 0, 0, 0],
+                [0, 0, voxel_spacing[2], 0],
+                [0, 0, 0, 1]
+            ])
+        case _:
+            raise ValueError(f"Unsupported orientation {orientation}.")
+
+    # Create a NIfTI image object
+    nii_img = nib.Nifti1Image(data, affine=affine_matrix)
+    nib.save(nii_img, output_file)
 
 
 def read_dicom_series(input_dir: Union[str, Path]):
