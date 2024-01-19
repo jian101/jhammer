@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 from skimage.segmentation import find_boundaries
 
-from jhammer.type_conversion import convert_2_data_type
+from jhammer.type_converters import convert_2_data_type
 
 
 def distance_transform_sdf(input, normalize=False):

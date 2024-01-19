@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from .util import get_margin, encode_one_hot
+from .utils import get_margin, encode_one_hot
 
 
 class CoordinateGeneratorABC(metaclass=ABCMeta):

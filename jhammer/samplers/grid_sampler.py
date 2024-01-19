@@ -4,8 +4,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from jhammer.weighted_sampling_data_loader.coordinate_generator import GridCoordinateGenerator
-from jhammer.weighted_sampling_data_loader.util import central_crop, get_margin
+from jhammer.samplers.coordinate_generator import GridCoordinateGenerator
+from jhammer.samplers.utils import central_crop, get_margin
 
 
 class GridSampler:

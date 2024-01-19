@@ -4,7 +4,7 @@ from typing import Union, Iterable
 import numpy as np
 
 from .coordinate_generator import CoordinateGeneratorABC
-from .util import central_crop
+from .utils import central_crop
 
 
 class WeightedPatchPicker:

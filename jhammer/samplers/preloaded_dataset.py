@@ -2,8 +2,8 @@ import random
 from abc import ABCMeta, abstractmethod
 from itertools import cycle
 
-from jhammer.weighted_sampling_data_loader.coordinate_generator import BalancedCoordinateGenerator
-from jhammer.weighted_sampling_data_loader.patch_picker import WeightedPatchPicker
+from jhammer.samplers.coordinate_generator import BalancedCoordinateGenerator
+from jhammer.samplers.patch_picker import WeightedPatchPicker
 
 
 class PreloadedDataset(metaclass=ABCMeta):

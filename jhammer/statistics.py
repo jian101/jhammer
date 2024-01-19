@@ -1,4 +1,4 @@
-from jhammer.type_conversion import convert_2_dtype
+from jhammer.type_converters import convert_2_dtype
 
 
 def aggregate_mean_std(mean1, std1, num1, mean2, std2, num2, ddof=1):

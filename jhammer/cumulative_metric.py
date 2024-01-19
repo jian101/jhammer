@@ -3,7 +3,7 @@ from typing import Union
 import torch
 
 from jhammer.reductions import Reduction
-from jhammer.type_conversion import convert_2_data_type
+from jhammer.type_converters import convert_2_data_type
 
 
 class CumulativeMetric:
