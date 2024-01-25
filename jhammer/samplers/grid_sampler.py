@@ -13,15 +13,15 @@ class GridSampler:
     Perform grid sample and recovery. The last N dimensions of given data will be split.
     """
 
-    def __init__(self, data: Union[np.ndarray, torch.Tensor], patch_shape, valid_shape=None):
+    def __init__(self, data: Union[np.ndarray, torch.Tensor], patch_size, valid_size=None):
         """
         Args:
             data: The data needs to be sample.
-            patch_shape: The data will be divided into patches with the shape of patch_shape.
-            valid_shape: The valid shape of a patch, used for restore.
+            patch_size: The data will be divided into patches with the shape of patch_shape.
+            valid_size: The valid shape of a patch, used for restore.
         """
-        self.patch_shape = np.asarray(patch_shape, dtype=np.uint32)
-        self.valid_shape = np.asarray(valid_shape, dtype=np.uint32) if valid_shape is not None else self.patch_shape
+        self.patch_shape = np.asarray(patch_size, dtype=np.uint32)
+        self.valid_shape = np.asarray(valid_size, dtype=np.uint32) if valid_size is not None else self.patch_shape
         assert len(self.patch_shape.shape) == len(self.valid_shape.shape)
 
         self.full_shape = data.shape
