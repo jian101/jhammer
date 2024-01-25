@@ -35,12 +35,6 @@ def write_list_2_txt(output_file, data_lst):
                 file.write("\n")
 
 
-def read_nii(input_file):
-    from nibabel import load
-    data = load(input_file)
-    return data.get_fdata()
-
-
 def save_nii(output_file,
              data,
              voxel_spacing=None,
