@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="jhammer",
-    version="3.0.5",
+    version="3.0.6",
     author="Dai Jian",
     author_email="daijian@stumail.ysu.edu.cn",
     description="My hammer for medical image processing and deap learning.",

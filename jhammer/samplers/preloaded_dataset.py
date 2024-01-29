@@ -12,12 +12,21 @@ class PreloadedDataset(metaclass=ABCMeta):
     For 3d data training.
     """
 
-    def __init__(self, samples: list, patch_size, n_patches_per_sample, n_samples_alive=0, shuffle=True):
+    def __init__(self, samples: list,
+                 patch_size,
+                 n_patches_per_sample,
+                 n_samples_alive=0,
+                 shuffle=True,
+                 transforms=None):
         """
         Args:
-            samples: Sample index.
-            n_patches_per_sample: How many patches cropped from every sample.
-            n_samples_alive: Maximum number of samples that save in RAM.
+            samples: sample index.
+            patch_size: size of each patch.
+            n_patches_per_sample: how many patches cropped from every sample.
+            n_samples_alive: maximum number of samples that save in RAM.
+            shuffle: if ``True``, shuffle the samples.
+            transforms:
+
 
         """
         if shuffle:
@@ -31,6 +40,8 @@ class PreloadedDataset(metaclass=ABCMeta):
         self.sample_queue = [None] * self.n_samples_alive
         self.index = 0
 
+        self.transforms = transforms
+
     def update_queue(self, index):
         """
         Update the queue element in {index}
@@ -42,19 +53,28 @@ class PreloadedDataset(metaclass=ABCMeta):
             _, patch_picker = self.sample_queue[index]
             patch_picker.reset()
         else:
-            data = self.sample_loader(sample_idx)
-            coordinate_generator = BalancedCoordinateGenerator(self.n_patches_per_sample, self.get_weight_label(data),
+            data = self.get_sample(sample_idx)
+            coordinate_generator = BalancedCoordinateGenerator(self.n_patches_per_sample,
+                                                               self.get_weight_map(data),
                                                                self.patch_size)
 
             patch_picker = WeightedPatchPicker(data, self.patch_size, coordinate_generator)
             self.sample_queue[index] = (sample_idx, patch_picker)
 
     @abstractmethod
-    def sample_loader(self, index):
+    def get_sample(self, index):
+        """
+        get sample by index from ``self.sample_iterator``
+        Args:
+            index:
+
+        Returns:
+
+        """
         ...
 
     @abstractmethod
-    def get_weight_label(self, data):
+    def get_weight_map(self, data):
         ...
 
     def __iter__(self):
@@ -77,4 +97,6 @@ class PreloadedDataset(metaclass=ABCMeta):
     def next(self, index):
         _, patch_picker = self.sample_queue[index]
         data = next(patch_picker)
+        if self.transforms:
+            data = self.transforms(data)
         return data
