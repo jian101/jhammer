@@ -6,13 +6,14 @@ import torch
 
 def convert_2_dtype(data, dst_dtype):
     """
-    Convert input data's data type to destination data type.
-    If source data is a collection, convert the data type of elements.
+    Convert input data's data type to destination data type. If source data is a collection, convert the data type of
+    elements.
 
     Args:
-        data:
-        dst_dtype
+        data (object):
+        dst_dtype (data type object):
     """
+
     if isinstance(data, np.ndarray):
         return data.astype(dst_dtype)
     if isinstance(data, torch.Tensor):
@@ -26,17 +27,19 @@ def convert_2_dtype(data, dst_dtype):
 
 def convert_2_data_type(data, output_type, dtype=None, device=None):
     """
-    Convert data to the assigned type data.
-    Note that the ``dtype`` is not functioned if the ``output_type`` is not in ``[np.ndarray, torch.Tensor]``.
+    Convert data to the assigned type data. Note that the `dtype` is not functioned if the `output_type` is not in
+    `[numpy.ndarray, torch.Tensor]`.
+
     Args:
-        data:
-        output_type:
-        dtype:
-        device:
+        data (object):
+        output_type (data type object):
+        dtype (np.dtype or torch.dtype or None, optional, default=None):
+        device (str or torch.device or None, optional, default=None):
 
     Returns:
 
     """
+
     if isinstance(data, output_type):
         if dtype:
             return convert_2_dtype(data, dtype)
@@ -64,14 +67,16 @@ def convert_2_data_type(data, output_type, dtype=None, device=None):
 def _convert_data_recursively(data: list, output_type=None, dtype=None):
     """
     Recursively change a subscriptable object's element type and data type.
+
     Args:
-        data:
-        output_type:
-        dtype:
+        data (list):
+        output_type (data type object, optional, default=None):
+        dtype (np.dtype or torch.dtype or None, optional, default=None):
 
     Returns:
 
     """
+
     if len(data) == 0:
         return output_type()
     if not isinstance(data[0], Sequence):

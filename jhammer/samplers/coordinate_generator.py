@@ -1,11 +1,11 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 import numpy as np
 
 from .utils import get_margin, encode_one_hot
 
 
-class CoordinateGeneratorABC(metaclass=ABCMeta):
+class CoordinateGenerator(ABC):
 
     @abstractmethod
     def __getitem__(self, index):
@@ -20,12 +20,19 @@ class CoordinateGeneratorABC(metaclass=ABCMeta):
         ...
 
     @staticmethod
-    def get_margin_mask(image_shape: tuple, patch_size: tuple):
+    def get_margin_mask(image_shape: tuple | list, patch_size: tuple | list):
         """
-        Build a mask that cover the area
-        which can be view as the central point of the patch with the size of patch_size.
-        Mask the central area that can be extracted. Left the margin area.
+        Build a mask that cover the area which can be view as the central point of the patch with the size of
+        patch_size. Mask the central area that can be extracted. Left the margin area.
+
+        Args:
+            image_shape (sequence):
+            patch_size (sequence):
+
+        Returns:
+
         """
+
         assert len(image_shape) == len(patch_size)
         margin = get_margin(patch_size)
         mask = np.zeros(image_shape, dtype=bool)
@@ -33,12 +40,18 @@ class CoordinateGeneratorABC(metaclass=ABCMeta):
         return mask
 
 
-class WeightedCoordinateGenerator(CoordinateGeneratorABC):
-    """
-    Choose coordinates according to the weight
-    """
+class WeightedCoordinateGenerator(CoordinateGenerator):
 
     def __init__(self, num_coordinates, patch_size, weight_map):
+        """
+        Choose coordinates according to the weight.
+
+        Args:
+            num_coordinates (int):
+            patch_size (sequence):
+            weight_map (numpy.ndarray or torch.Tensor):
+        """
+
         # number of coordinates that need to be picked.
         self.n = num_coordinates
         self.patch_size = patch_size
@@ -63,47 +76,48 @@ class WeightedCoordinateGenerator(CoordinateGeneratorABC):
 
 
 class BalancedCoordinateGenerator(WeightedCoordinateGenerator):
-    """
-    Generate coordinates according to the proportion of categories.
-    In general, the smaller the percentage of category, the more likely it is to be taken.
-    Parameter data is the un-one-hot label.
-    """
-
     def __init__(self, num_coordinates, data, patch_size):
         """
+        Generate coordinates according to the proportion of categories. In general, the smaller the percentage of
+        category, the more likely it is to be taken. Parameter data is the un-one-hot label.
+
         Args:
-            data: the label matrix. This data will be needed to generate the weight map.
+            num_coordinates (int):
+            data (numpy.ndarray or torch.Tensor): The label matrix. this data will be needed to generate the weight map.
+            patch_size (sequence):
         """
+
         self.n = num_coordinates
         self.patch_size = patch_size
         super().__init__(num_coordinates=num_coordinates, patch_size=patch_size, weight_map=self.get_weight_map(data))
 
     def get_weight_map(self, data):
-        # One-hot first
+        # one-hot first
         weight_map = encode_one_hot(data)
 
-        # Exclude margin
+        # exclude margin
         margin_mask = self.get_margin_mask(data.shape, self.patch_size)
         weight_map = weight_map * margin_mask
         weight_map = weight_map.astype(np.float32)
 
-        # Normalize on every category axis
+        # normalize on every category axis
         category_sum = np.sum(weight_map, axis=tuple(range(1, len(data.shape) + 1)), keepdims=True)
         weight_map = weight_map / (category_sum + 1)
         weight_map = np.sum(weight_map, axis=0).astype(np.float32)
         return weight_map
 
 
-class GridCoordinateGenerator(CoordinateGeneratorABC):
-    """
-    Args:
-        original_shape: The shape of original image.
-        patch_shape: The shape of one patch.
-        valid_shape: The size of valid patch. Valid shape should be less than patch shape.
-                    A valid patch needs to be extracted from a patch.
-    """
-
+class GridCoordinateGenerator(CoordinateGenerator):
     def __init__(self, original_shape, patch_shape, valid_shape):
+        """
+
+        Args:
+            original_shape (sequence): The shape of original image.
+            patch_shape (sequence): The shape of one patch.
+            valid_shape (sequence): The size of valid patch. Valid shape should be less than patch shape. A valid patch
+                needs to be extracted from a patch.
+        """
+
         self.original_shape = np.asarray(original_shape, dtype=np.uint32)
         self.patch_shape = np.asarray(patch_shape, dtype=np.uint32)
         self.valid_shape = np.asarray(valid_shape, dtype=np.uint32)
@@ -115,16 +129,20 @@ class GridCoordinateGenerator(CoordinateGeneratorABC):
     def get_coordinates(self):
         """
         Get central coordinates according to the original shape and valid shape.
+
+        Returns:
+
         """
+
         coordinate_dims = [range(0, i, j) for i, j in zip(self.original_shape, self.valid_shape)]
         coordinates = np.meshgrid(*coordinate_dims, indexing="ij")
         coordinates = list(map(lambda x: x.flatten(), coordinates))
-        # Get the corner coordinate of each patch
+        # get the corner coordinate of each patch
         coordinates = np.stack(coordinates, axis=-1)
         coordinates = np.where(coordinates + self.valid_shape > self.original_shape,
                                self.original_shape - self.valid_shape, coordinates)
 
-        # Shift coordinate to patch center.
+        # shift coordinate to patch center
         shift = get_margin(self.valid_shape)[:, 0]
         central_coordinates = coordinates + shift
         return central_coordinates.astype(np.int32)

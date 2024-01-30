@@ -9,23 +9,23 @@ from jhammer.samplers.utils import central_crop, get_margin
 
 
 class GridSampler:
-    """
-    Perform grid sample and recovery. The last N dimensions of given data will be split.
-    """
-
     def __init__(self, data: Union[np.ndarray, torch.Tensor], patch_size, valid_size=None):
         """
+        Perform grid sample and recovery. The last N dimensions of given data will be split.
+
         Args:
-            data: The data needs to be sample.
-            patch_size: The data will be divided into patches with the shape of patch_shape.
-            valid_size: The valid shape of a patch, used for restore.
+            data (numpy.ndarray or torch.Tensor): The data needs to be sample.
+            patch_size (sequence): The data will be divided into patches with the shape of patch_shape.
+            valid_size (sequence or None, optional, default=None): Valid patch size, used for restore. If `None`, as
+                same as `patch_size`.
         """
+
         self.patch_size = np.asarray(patch_size, dtype=np.uint32)
         self.valid_size = np.asarray(valid_size, dtype=np.uint32) if valid_size is not None else self.patch_size
         assert len(self.patch_size.shape) == len(self.valid_size.shape)
 
         self.full_size = data.shape
-        # Shape of data, but batch and/or channel dimensions are excluded.
+        # shape of data, but batch and/or channel dimensions are excluded
         self.original_shape = self.full_size[-len(self.patch_size):]
         self.coordinate_generator = GridCoordinateGenerator(self.original_shape, patch_shape=self.patch_size,
                                                             valid_shape=self.valid_size)
@@ -47,11 +47,14 @@ class GridSampler:
     def restore(self, patches, restore_shape=None):
         """
         Every element's batch/channel dimensions in blocks should be put at the beginning.
+
         Args:
-            patches:
-            restore_shape: Restore data's batch/channel dimensions can differ from the data which was divided
-            as long as keeping the same image dimensions.
+            patches (sequence):
+            restore_shape (sequence or None, optional, default=None): Restore array shape. Batch/channel dimensions
+                of restored array can differ from the data which was divided as long as keeping the same image
+                dimensions. If None, as same as `self.full_size`.
         """
+
         patches = list(map(lambda x: self._shrink_shape(x), patches))
         if not restore_shape:
             restore_shape = self.full_size
@@ -60,7 +63,14 @@ class GridSampler:
     def _shrink_shape(self, data: Union[np.ndarray, torch.Tensor]):
         """
         Shrink data to assigned shape.
+
+        Args:
+            data (numpy.ndarray or torch.Tensor):
+
+        Returns:
+
         """
+
         if (self.patch_size == self.valid_size).all():
             return data
         center = [e // 2 if e % 2 != 0 else e // 2 - 1 for e in self.valid_size]

@@ -82,14 +82,16 @@ class UNet(nn.Module):
     def __init__(self, in_channels=1, out_channels=1, width_factor=64, blocks=5, normalize=True):
         """
         UNet.
+
         Args:
-            in_channels:
-            out_channels:
-            width_factor:
-            blocks:
-            normalize: if `True`, normalize the output using `torch.sigmoid` for one dimension output,
-            or `torch.softmax` for multiple classes output.
+            in_channels (int, optional, default=1):
+            out_channels (int, optional, default=1):
+            width_factor (int, optional, default=64):
+            blocks (int, optional, default=5):
+            normalize (bool, optional, default=True): If `True`, normalize the output using `torch.sigmoid` for one
+                dimension output, or `torch.softmax` for multiple classes output.
         """
+
         super().__init__()
         self.out_channels = out_channels
         encoder = UNetEncoder(in_channels=in_channels, width_factor=width_factor, blocks=blocks)

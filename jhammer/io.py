@@ -41,25 +41,29 @@ def save_nii(output_file,
              orientation="LPI"):
     """
     Save image with nii format.
+
     Args:
-        output_file:
-        data:
-        voxel_spacing: `tuple(x, y, z)`. Voxel spacing of each axis.
-        orientation: Default is LPI (Left-Posterior-Inferior), can be ARI (Anterior-Right-Inferior).
+        output_file (str or pathlib.Path):
+        data (numpy.ndarray):
+        voxel_spacing (sequence or None, optional, default=None): `tuple(x, y, z)`. Voxel spacing of each axis. If None,
+            make `voxel_spacing` as `(1.0, 1.0, 1.0)`.
+        orientation (str, optional, default="LPI"): "LPI" | "ARI". LPI: Left-Posterior-Inferior;
+            ARI: Anterior-Right-Inferior.
 
     Returns:
 
     """
+
     import nibabel as nib
     ensure_dir(output_file)
     if voxel_spacing is None:
-        voxel_spacing = (1.0, 1.0, 1.0)  # Replace this with your desired voxel spacing in millimeters
+        voxel_spacing = (1.0, 1.0, 1.0)  # replace this with your desired voxel spacing in millimeters
 
     match orientation:
         case "LPI":
             affine_matrix = np.diag(list(voxel_spacing) + [1.0])
         case "ARI":
-            # Calculate the affine matrix based on the desired voxel spacing and ARI orientation
+            # calculate the affine matrix based on the desired voxel spacing and ARI orientation
             affine_matrix = np.array([
                 [0, -voxel_spacing[0], 0, 0],
                 [-voxel_spacing[1], 0, 0, 0],
@@ -69,7 +73,7 @@ def save_nii(output_file,
         case _:
             raise ValueError(f"Unsupported orientation {orientation}.")
 
-    # Create a NIfTI image object
+    # create a NIfTI image object
     nii_img = nib.Nifti1Image(data, affine=affine_matrix)
     nib.save(nii_img, output_file)
 
@@ -99,12 +103,14 @@ def read_dicom_series(input_dir: Union[str, Path]):
 def np_object_hook(dct):
     """
     Convert JSON list or scalar to numpy.
+
     Args:
-        dct:
+        dct (mapping):
 
     Returns:
 
     """
+
     if "__ndarray__" in dct:
         shape = dct["shape"]
         dtype = descr_to_dtype(dct["dtype"])
@@ -129,13 +135,15 @@ def np_object_hook(dct):
 
 def read_json(input_json_file):
     """
-    Read and convert `input_json_file`
+    Read and convert `input_json_file`.
+
     Args:
-        input_json_file:
+        input_json_file (str or pathlib.Path):
 
     Returns:
 
     """
+
     if not os.path.exists(input_json_file):
         raise FileExistsError(f"{input_json_file} does not exist.")
     with open(input_json_file, 'r') as json_file:
@@ -146,13 +154,15 @@ def read_json(input_json_file):
 class NumpyJSONEncoder(json.JSONEncoder):
     def __init__(self, primitive=False, base64=True, **kwargs):
         """
-        JSON encoder for `np.ndarray`.
+        JSON encoder for `numpy.ndarray`.
+
         Args:
-            primitive: user primitive type. `np.ndarray` is stored as JSON list. `np.generic` is stored as a number.
-                Default is False.
-            base64: use base64 to encode. Default is True.
+            primitive (bool, optional, default=False): Use primitive type if `True`. In primitive schema,
+                `numpy.ndarray` is stored as JSON list and `np.generic` is stored as a number.
+            base64 (bool, optional, default=True): Use base64 to encode.
             **kwargs:
         """
+
         self.primitive = primitive
         self.base64 = base64
         super().__init__(**kwargs)
@@ -178,16 +188,18 @@ class NumpyJSONEncoder(json.JSONEncoder):
 def save_json(output_file, obj, primitive=False, base64=True):
     """
     Convert obj to JSON object and save as file.
+
     Args:
-        output_file:
-        obj:
-        primitive: user primitive type. `np.ndarray` is stored as JSON list. `np.generic` is stored as a number.
-                Default is False.
-        base64: use base64 to encode. Default is True.
+        output_file (str or pathlib.Path):
+        obj (mapping):
+        primitive (bool, optional, default=False): Use primitive type if `True`. In primitive schema, `numpy.ndarray` is
+            stored as JSON list and `np.generic` is stored as a number.
+        base64 (bool, optional, default=True): Use base64 to encode.
 
     Returns:
 
     """
+
     ensure_dir(output_file)
     with open(output_file, "w") as file:
         json.dump(obj, file, cls=NumpyJSONEncoder, **{"primitive": primitive, "base64": base64})

@@ -10,20 +10,21 @@ def poly_lr(optimizer, initial_lr, epoch, max_epochs, min_lr=0, exponent=0.9):
     return lr
 
 
-def half_cycle_cosine_after_warmup_lr(optimizer, initial_lr, epoch, max_epochs, warmup_epochs, min_lr=0):
+def linear_warmup_cosine_decay_lr(optimizer, initial_lr, epoch, max_epochs, warmup_epochs, min_lr=0):
     """
-    Decay the learning rate with half-cycle cosine after warmup
+    linear warmup and then cosine decay.
     Args:
-        optimizer:
-        initial_lr: the initial lr
-        epoch: current epoch
-        max_epochs: max epoch
-        warmup_epochs: warmup after assigned epochs
-        min_lr:
+        optimizer (torch.optim.Optimizer):
+        initial_lr (float): The initial lr.
+        epoch (int): Current epoch.
+        max_epochs (int): Max epoch.
+        warmup_epochs (int): Warmup after assigned epochs.
+        min_lr (float, optional, default=0): The minimal lr.
 
     Returns:
 
     """
+
     if epoch < warmup_epochs:
         lr = initial_lr * epoch / warmup_epochs
     else:

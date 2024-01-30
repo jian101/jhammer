@@ -28,8 +28,18 @@ def refine_nodes(node, config):
 
 def replace_str(key, node, config, list_index=None):
     """
-    if node[key] is list type, set list_index to the index of current element of node[key]
+    If `node[key]` is list type, set list_index to the index of current element of `node[key]`.
+
+    Args:
+        key (str):
+        node (mapping):
+        config (mapping):
+        list_index (int or None, optional, default=None):
+
+    Returns:
+
     """
+
     reference_patten = r"(\$\{.+?\})"
     reference_key_patten = r"\$\{(.+)\}"
     if list_index is not None:
@@ -52,8 +62,16 @@ def replace_str(key, node, config, list_index=None):
 
 def get_node_key(key, config):
     """
-    Given a key, return the inner node and key.
+    Get the inner node and key.
+
+    Args:
+        key (str):
+        config (mapping):
+
+    Returns:
+
     """
+
     node_hierarchy = key.split(".")
 
     if len(node_hierarchy) == 1:

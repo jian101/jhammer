@@ -10,9 +10,10 @@ def distance_transform_sdf(input, normalize=False):
     Compute signed distance function(SDF) of the input.
 
     Args:
-        input: input data ndarray or tensor.
-        normalize: if True, return the normalization of SDF which the values belong to [0,1]. Default is false.
+        input (numpy.ndarray or torch.Tensor): Input data ndarray or tensor.
+        normalize (bool, optional, default=False): If True, perform max-min normalization for SDF.
     """
+
     binary_segmentation_np = convert_2_data_type(input, output_type=np.ndarray, dtype=bool)
     pos_distance = distance_transform_edt(binary_segmentation_np)
     neg_segmentation = ~binary_segmentation_np

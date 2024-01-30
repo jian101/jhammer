@@ -6,23 +6,23 @@ from jhammer.reductions import Reduction
 
 
 class DiceLoss(Module):
-    """
-    Dice loss.
-    The `input` is expected to be a `torch.Tensor` with the shape of `[BNHW(D)]`,
-    where the first axis of `B` is batch size and the second axis of 'N' is the number of classes.
-
-    If `to_one_hot_y` is True, the `target` is encoded by one-hot manner. `n_classes` is the total number of classes
-    for one-hot encoding Default is -1, the number of classes will be inferred as one greater than the largest class
-    value in the target tensor.
-
-    The `target` should be a shape of `[BHW(D)]` if `to_one_hot_y` is True, `[BNHW(D)]`, otherwise.
-
-    """
-
     def __init__(self,
                  reduction: str = "mean",
                  to_one_hot_y=False,
                  n_classes=-1):
+        """
+        Dice loss. The `input` is expected to be a `torch.Tensor` with the shape of `[BNHW(D)]`, where the first axis
+        of `B` is batch size and the second axis of 'N' is the number of classes. If `to_one_hot_y` is True, the
+        `target` is encoded by one-hot manner. `n_classes` is the total number of classes for one-hot encoding. Default
+        is -1, the number of classes will be inferred as one greater than the largest class value in the target tensor.
+        The `target` should be a shape of `[BHW(D)]` if `to_one_hot_y` is True, `[BNHW(D)]`, otherwise.
+
+        Args:
+            reduction (str, optional, default="mean"):
+            to_one_hot_y (bool, optional, default=False):
+            n_classes (int, optional, default=-1):
+        """
+
         super().__init__()
         assert reduction is not None
         self.smooth_epsilon = 1e-5

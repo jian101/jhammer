@@ -1,56 +1,65 @@
 import random
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from itertools import cycle
 
 from jhammer.samplers.coordinate_generator import BalancedCoordinateGenerator
 from jhammer.samplers.patch_picker import WeightedPatchPicker
 
 
-class PreloadedDataset(metaclass=ABCMeta):
-    """
-    Store the subjects on a queue of length queue_length in the RAM.
-    For 3d data training.
-    """
-
+class PreloadedDataset(ABC):
     def __init__(self, samples: list,
                  patch_size,
                  n_patches_per_sample,
-                 n_samples_alive=0,
+                 n_samples_alive=1,
                  shuffle=True,
                  transforms=None):
         """
+        Store the subjects on a queue of length queue_length in the RAM.
+
         Args:
-            samples: sample index.
-            patch_size: size of each patch.
-            n_patches_per_sample: how many patches cropped from every sample.
-            n_samples_alive: maximum number of samples that save in RAM.
-            shuffle: if ``True``, shuffle the samples.
-            transforms:
-
-
+            samples (list): List of samples.
+            patch_size (sequence):
+            n_patches_per_sample (int): Number of patches cropped from each sample.
+            n_samples_alive (int, optional, default=1): Maximum number of samples saved in RAM, should in the range of
+                [1, len(samples)].
+            shuffle (bool, optional, default=True): If `True`, shuffle the samples.
+            transforms (torchvision.transforms.Compose or None):
         """
+
         if shuffle:
             random.shuffle(samples)
         self.sample_iterator = cycle(samples)
 
         self.patch_size = patch_size
         self.n_patches_per_sample = n_patches_per_sample
-        self.n_samples_alive = n_samples_alive if 0 < n_samples_alive <= len(samples) else len(samples)
 
-        self.sample_queue = [None] * self.n_samples_alive
+        if n_samples_alive <= 0:
+            n_samples_alive = 1
+        elif n_samples_alive > len(samples):
+            n_samples_alive = len(samples)
+        self.n_samples_alive = n_samples_alive
+
+        self.sample_queue = [None, ] * self.n_samples_alive
         self.index = 0
 
         self.transforms = transforms
 
-    def update_queue(self, index):
+    def update_queue(self, pos: int):
         """
-        Update the queue element in {index}
+        Update the queue element in the given position.
+
+        Args:
+            pos (int):
+
+        Returns:
+
         """
+
         sample_idx = next(self.sample_iterator)
 
-        if self.sample_queue[index] and self.sample_queue[index][0] == sample_idx:
-            # Just update the patch extractor.
-            _, patch_picker = self.sample_queue[index]
+        if self.sample_queue[pos] and self.sample_queue[pos][0] == sample_idx:
+            # only update the patch picker.
+            _, patch_picker = self.sample_queue[pos]
             patch_picker.reset()
         else:
             data = self.get_sample(sample_idx)
@@ -59,18 +68,20 @@ class PreloadedDataset(metaclass=ABCMeta):
                                                                self.patch_size)
 
             patch_picker = WeightedPatchPicker(data, self.patch_size, coordinate_generator)
-            self.sample_queue[index] = (sample_idx, patch_picker)
+            self.sample_queue[pos] = (sample_idx, patch_picker)
 
     @abstractmethod
     def get_sample(self, index):
         """
-        get sample by index from ``self.sample_iterator``
+        Get sample by index from `self.sample_iterator`.
+
         Args:
-            index:
+            index (object): Object like str or int that indices the sample.
 
         Returns:
 
         """
+
         ...
 
     @abstractmethod
@@ -84,7 +95,7 @@ class PreloadedDataset(metaclass=ABCMeta):
         index = self.index
         self.index = (self.index + 1) % self.n_samples_alive
 
-        # Only invoke when visiting the index at the first time.
+        # only invoke when visiting the index at the first time.
         if self.sample_queue[index] is None:
             self.update_queue(index)
         try:
