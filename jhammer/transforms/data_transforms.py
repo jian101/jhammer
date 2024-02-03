@@ -58,15 +58,48 @@ class AddChannel(Transform):
         return data
 
 
+class ZscoreNormalization(Transform):
+    def __init__(self, keys, mean_value=None, std_value=None, mean_key=None, std_key=None):
+        """
+        Perform z-score normalization. `mean_key` and `std_key` indicate keys of mean and std value in data. You can
+        also set common mean and std values for all data. Mean and std values provided by each sample will be used
+        firstly if they exist.
+
+        Args:
+            keys (str or sequence):
+            mean_value (float or None, optional, default=None):
+            std_value (float or None, optional, default=None):
+            mean_key (str or None, optional, default=None):
+            std_key (str or None, optional, default=None):
+        """
+
+        super().__init__(keys)
+        self.mean_value = mean_value
+        self.std_value = std_value
+        self.mean_key = mean_key
+        self.std_key = std_key
+
+    def _call_fun(self, data, *args, **kwargs):
+        mean = data[self.mean_key] if self.mean_key in data else self.mean_value
+        std = data[self.std_key] if self.std_key in data else self.std_value
+        assert mean and std
+
+        for key in self.keys:
+            value = data[key]
+            value = (value - mean) / std
+            data[key] = value
+        return data
+
+
 class MinMaxNormalization(Transform):
     def __init__(self, keys, lower_bound_percentile=1, upper_bound_percentile=99):
         """
         Perform min-max normalization.
 
         Args:
+            keys (str or sequence):
             lower_bound_percentile (int, optional, default=1):
             upper_bound_percentile (int, optional, default=99):
-            keys (str or sequence):
         """
 
         super().__init__(keys)
