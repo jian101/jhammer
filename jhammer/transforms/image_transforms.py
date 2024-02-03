@@ -33,9 +33,9 @@ class RandFlip(ImageAugmentTransform):
 
     def _call_fun(self, data, *args, **kwargs):
         for key in self.keys:
-            elem_data = data[key]
-            flipped_elem_data = np.flip(elem_data, axis=self.axis)
-            data[key] = flipped_elem_data
+            image = data[key]
+            flipped_elem_data = np.flip(image, axis=self.axis)
+            data[key] = flipped_elem_data.copy()
         return data
 
 
@@ -60,8 +60,8 @@ class RandRotate90(ImageAugmentTransform):
     def _call_fun(self, data, *args, **kwargs):
         k = np.random.randint(1, self.max_k + 1)
         for key in self.keys:
-            elem_data = data[key]
-            rotated_elem_data = np.rot90(elem_data, k=k, axes=self.axes)
+            image = data[key]
+            rotated_elem_data = np.rot90(image, k=k, axes=self.axes)
             data[key] = rotated_elem_data
         return data
 
@@ -90,8 +90,8 @@ class RandScaleIntensity(ImageAugmentTransform):
     def _call_fun(self, data, *args, **kwargs):
         factor = np.random.uniform(self.factors[0], self.factors[1])
         for key in self.keys:
-            elem_data = data[key]
-            scaled_data = elem_data * (1. + factor)
+            image = data[key]
+            scaled_data = image * (1. + factor)
             data[key] = scaled_data
         return data
 
@@ -120,7 +120,7 @@ class RandShiftIntensity(ImageAugmentTransform):
     def _call_fun(self, data, *args, **kwargs):
         offset = np.random.uniform(self.offsets[0], self.offsets[1])
         for key in self.keys:
-            elem_data = data[key]
-            scaled_data = elem_data + offset
+            image = data[key]
+            scaled_data = image + offset
             data[key] = scaled_data
         return data
