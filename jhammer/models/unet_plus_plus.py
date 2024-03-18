@@ -77,8 +77,4 @@ class UNetPlusPlus(nn.Module):
         x0_4 = self.conv0_4(torch.cat([x0_0, x0_1, x0_2, x0_3, self.up(x1_3)], 1))
 
         output = self.final(x0_4)
-        if self.out_channels == 1:
-            output = torch.sigmoid(output)
-        else:
-            output = torch.softmax(output, dim=1)
         return output

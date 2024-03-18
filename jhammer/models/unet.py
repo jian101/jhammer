@@ -100,13 +100,7 @@ class UNet(nn.Module):
         self.unet = nn.Sequential(encoder,
                                   decoder,
                                   decoder_head)
-        self.normalize = normalize
 
     def forward(self, x):
         x = self.unet(x)
-        if self.normalize:
-            if self.out_channels == 1:
-                x = torch.sigmoid(x)
-            else:
-                x = torch.softmax(x, dim=1)
         return x
