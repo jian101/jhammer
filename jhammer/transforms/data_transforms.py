@@ -1,5 +1,5 @@
 import numpy as np
-from einops import rearrange
+from einops import rearrange, repeat
 
 from jhammer.transforms.transforms import Transform
 
@@ -9,7 +9,7 @@ class ToType(Transform):
         super().__init__(keys)
         self.dtype = dtype
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             value = data[key].astype(self.dtype)
             data[key] = value
@@ -29,10 +29,24 @@ class Rearrange(Transform):
         super().__init__(keys)
         self.pattern = pattern
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             value = data[key]
             value = rearrange(value, self.pattern)
+            data[key] = value
+        return data
+
+
+class Repeat(Transform):
+    def __init__(self, keys, pattern, **kwargs):
+        super().__init__(keys)
+        self.pattern = pattern
+        self.kwargs = kwargs
+
+    def _call_fun(self, data):
+        for key in self.keys:
+            value = data[key]
+            value = repeat(value, self.pattern, **self.kwargs)
             data[key] = value
         return data
 
@@ -50,7 +64,7 @@ class AddChannel(Transform):
         super().__init__(keys)
         self.dim = dim
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             value = data[key]
             value = np.expand_dims(value, axis=self.dim)
@@ -79,7 +93,7 @@ class ZscoreNormalization(Transform):
         self.mean_key = mean_key
         self.std_key = std_key
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         mean = data[self.mean_key] if self.mean_key in data else self.mean_value
         std = data[self.std_key] if self.std_key in data else self.std_value
         assert mean and std
@@ -106,7 +120,7 @@ class MinMaxNormalization(Transform):
         self.lower_bound_percentile = lower_bound_percentile
         self.upper_bound_percentile = upper_bound_percentile
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             image = data[key]
             min_value, max_value = np.percentile(image, (self.lower_bound_percentile, self.upper_bound_percentile))
@@ -126,7 +140,7 @@ class GetShape(Transform):
 
         super().__init__(keys)
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             shape = data[key].shape
             shape = np.asarray(shape)

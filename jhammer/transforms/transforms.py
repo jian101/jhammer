@@ -8,9 +8,9 @@ class Transform(ABC):
             keys = (keys, )
         self.keys = keys
 
-    def __call__(self, data, *args, **kwargs):
-        return self._call_fun(data, *args, **kwargs)
+    def __call__(self, data):
+        return self._call_fun(data)
 
     @abstractmethod
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         ...

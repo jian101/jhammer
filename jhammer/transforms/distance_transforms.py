@@ -15,7 +15,7 @@ class SDF(Transform):
         super().__init__(keys)
         self.normalize = normalize
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             segmentation = data[key]
             sdf = distance_transform_sdf(segmentation, self.normalize)

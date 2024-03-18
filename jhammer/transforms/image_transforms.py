@@ -10,7 +10,7 @@ class ImageAugmentTransform(Transform, ABC):
         super().__init__(keys)
         self.prob = prob
 
-    def __call__(self, data, *args, **kwargs):
+    def __call__(self, data):
         if np.random.random() < self.prob:
             data = self._call_fun(data)
         return data
@@ -31,7 +31,7 @@ class RandFlip(ImageAugmentTransform):
         super().__init__(keys, prob)
         self.axis = spatial_axis
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         for key in self.keys:
             image = data[key]
             flipped_elem_data = np.flip(image, axis=self.axis)
@@ -57,12 +57,12 @@ class RandRotate90(ImageAugmentTransform):
         self.max_k = max_k
         self.axes = spatial_axes
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         k = np.random.randint(1, self.max_k + 1)
         for key in self.keys:
             image = data[key]
             rotated_elem_data = np.rot90(image, k=k, axes=self.axes)
-            data[key] = rotated_elem_data
+            data[key] = rotated_elem_data.copy()
         return data
 
 
@@ -87,7 +87,7 @@ class RandScaleIntensity(ImageAugmentTransform):
         else:
             self.factors = (min(factors), max(factors))
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         factor = np.random.uniform(self.factors[0], self.factors[1])
         for key in self.keys:
             image = data[key]
@@ -117,7 +117,7 @@ class RandShiftIntensity(ImageAugmentTransform):
         else:
             self.factors = (min(offsets), max(offsets))
 
-    def _call_fun(self, data, *args, **kwargs):
+    def _call_fun(self, data):
         offset = np.random.uniform(self.offsets[0], self.offsets[1])
         for key in self.keys:
             image = data[key]
