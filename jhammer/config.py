@@ -95,7 +95,3 @@ def search_node(node_hierarchy, node):
             else:
                 node = node[key]
     return None, None
-
-
-config_file = "/home/ubuntu/dj/bca/cfgs/training/5hao_SAT.toml"
-config = get_config(config_file)
