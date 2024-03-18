@@ -12,28 +12,28 @@ def get_config(file):
     return config
 
 
-def refine_nodes(node, config):
+def refine_nodes(node, root):
     for k, v in node.items():
         if isinstance(v, str):
-            replace_str(k, node, config)
+            replace_str(k, node, root)
         elif isinstance(v, dict):
-            refine_nodes(v, config)
+            refine_nodes(v, root)
         elif isinstance(v, list):
             for i, inner_v in enumerate(v):
                 if isinstance(inner_v, str):
-                    replace_str(k, node, config, list_index=i)
+                    replace_str(k, node, root, list_index=i)
                 elif isinstance(inner_v, dict):
-                    refine_nodes(inner_v, config)
+                    refine_nodes(inner_v, root)
 
 
-def replace_str(key, node, config, list_index=None):
+def replace_str(key, node, root, list_index=None):
     """
     If `node[key]` is list type, set list_index to the index of current element of `node[key]`.
 
     Args:
         key (str):
         node (mapping):
-        config (mapping):
+        root (mapping):
         list_index (int or None, optional, default=None):
 
     Returns:
@@ -51,32 +51,51 @@ def replace_str(key, node, config, list_index=None):
         return
     for each in match:
         replace_key = re.search(reference_key_patten, each).group(1)
-        replace_node, replace_key = get_node_key(replace_key, config)
+        replace_node, replace_key = get_node_key(replace_key, node, root)
         if isinstance(replace_node[replace_key], str):
-            replace_str(replace_key, replace_node, config)
+            replace_str(replace_key, replace_node, root)
         if list_index is not None:
-            node[key][list_index] = node[key][list_index].replace(each, config[replace_key])
+            node[key][list_index] = node[key][list_index].replace(each, root[replace_key])
         else:
             node[key] = node[key].replace(each, str(replace_node[replace_key]))
 
 
-def get_node_key(key, config):
+def get_node_key(key, node, root):
     """
     Get the inner node and key.
 
     Args:
         key (str):
-        config (mapping):
+        root (mapping):
 
     Returns:
 
     """
 
     node_hierarchy = key.split(".")
+    # first, search on current node
+    # second, search on root if search failed on current node
 
-    if len(node_hierarchy) == 1:
-        return config, key
-    node = config
-    for key in node_hierarchy[:-1]:
-        node = node[key]
-    return node, node_hierarchy[-1]
+    node, key = search_node(node_hierarchy, node)
+    if node and key:
+        return node, key
+
+    node = root
+    node, key = search_node(node_hierarchy, node)
+    if node and key:
+        return node, key
+    raise ValueError(f"config don't contain key: {key}")
+
+
+def search_node(node_hierarchy, node):
+    for i, key in enumerate(node_hierarchy[::-1]):
+        if key in node:
+            if i == len(node_hierarchy) - 1:
+                return node, node_hierarchy[-1]
+            else:
+                node = node[key]
+    return None, None
+
+
+config_file = "/home/ubuntu/dj/bca/cfgs/training/5hao_SAT.toml"
+config = get_config(config_file)
