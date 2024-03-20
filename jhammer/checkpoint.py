@@ -40,14 +40,14 @@ def load_checkpoint(file, model: Union[nn.Module, None] = None, optimizer: Union
         if MODEL not in checkpoint:
             log.warning(f"Checkpoint {file} does not include model state dict.")
         else:
-            log.info("Loading model state.")
             model = get_unwrapped_model(model)
             model.load_state_dict(checkpoint[MODEL])
+            log.info("Model state loaded.")
 
     if optimizer:
         if OPTIMIZER not in checkpoint:
             log.warning(f"Checkpoint {file} does not include optimizer state dict.")
         else:
-            log.info(f"Loading optimizer state.")
             optimizer.load_state_dict(checkpoint[OPTIMIZER])
+            log.info(f"Optimizer state loaded.")
     return checkpoint

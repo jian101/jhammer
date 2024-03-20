@@ -66,6 +66,7 @@ def get_node_key(key, node, root):
 
     Args:
         key (str):
+        node (dict):
         root (mapping):
 
     Returns:
@@ -76,15 +77,15 @@ def get_node_key(key, node, root):
     # first, search on current node
     # second, search on root if search failed on current node
 
-    node, key = search_node(node_hierarchy, node)
-    if node and key:
-        return node, key
+    node, unpacked_key = search_node(node_hierarchy, node)
+    if node and unpacked_key:
+        return node, unpacked_key
 
     node = root
-    node, key = search_node(node_hierarchy, node)
-    if node and key:
-        return node, key
-    raise ValueError(f"config don't contain key: {key}")
+    node, unpacked_key = search_node(node_hierarchy, node)
+    if node and unpacked_key:
+        return node, unpacked_key
+    raise ValueError(f"config doesn't contain key: {key}")
 
 
 def search_node(node_hierarchy, node):

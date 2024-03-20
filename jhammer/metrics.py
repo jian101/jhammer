@@ -3,7 +3,7 @@ import torch
 from medpy.metric.binary import __surface_distances
 
 
-def dsc(input_data: torch.Tensor, target: torch.Tensor):
+def dsc(input_data: torch.Tensor | np.ndarray, target: torch.Tensor | np.ndarray):
     eps = 1e-5
     input_class = input_data.flatten()
     target_class = target.flatten()
